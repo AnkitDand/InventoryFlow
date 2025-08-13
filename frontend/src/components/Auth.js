@@ -45,7 +45,7 @@ const Auth = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>SaaS Inventory Tracker</h1>
+        <h1>Inventory Tracker</h1>
         <h2>{isLogin ? "Sign In" : "Create Account"}</h2>
 
         {error && <div className="error">{error}</div>}
