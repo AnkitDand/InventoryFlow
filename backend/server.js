@@ -1,7 +1,11 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("dotenv").config();
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import pool from "./db.js"; // our new PostgreSQL connection
+import authRoutes from "./routes/auth.js";
+import productsRoutes from "./routes/products.js";
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -10,15 +14,15 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Database connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+// Test DB connection
+pool
+  .connect()
+  .then(() => console.log("Connected to Supabase/PostgreSQL"))
+  .catch((err) => console.error("DB connection error:", err));
 
 // Routes
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/products", require("./routes/products"));
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productsRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
