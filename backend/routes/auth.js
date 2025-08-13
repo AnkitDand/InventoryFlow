@@ -1,8 +1,9 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const { v4: uuidv4 } = require("uuid");
+// routes/auth.js
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+import { createUser, getUserByEmail } from "../models/user.js";
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.post("/register", async (req, res) => {
     const { email, password, companyName } = req.body;
 
     // Check if user exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await getUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -23,19 +24,17 @@ router.post("/register", async (req, res) => {
     // Create unique tenant ID
     const tenantId = uuidv4();
 
-    // Create user
-    const user = new User({
+    // Create user in PostgreSQL
+    const user = await createUser({
       email,
       password: hashedPassword,
       companyName,
       tenantId,
     });
 
-    await user.save();
-
     // Generate JWT
     const token = jwt.sign(
-      { userId: user._id, tenantId: user.tenantId },
+      { userId: user.id, tenantId: user.tenant_id },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
@@ -43,13 +42,14 @@ router.post("/register", async (req, res) => {
     res.status(201).json({
       token,
       user: {
-        id: user._id,
+        id: user.id,
         email: user.email,
-        companyName: user.companyName,
-        tenantId: user.tenantId,
+        companyName: user.company_name,
+        tenantId: user.tenant_id,
       },
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -60,7 +60,7 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await getUserByEmail(email);
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -73,7 +73,7 @@ router.post("/login", async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user._id, tenantId: user.tenantId },
+      { userId: user.id, tenantId: user.tenant_id },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
@@ -81,15 +81,16 @@ router.post("/login", async (req, res) => {
     res.json({
       token,
       user: {
-        id: user._id,
+        id: user.id,
         email: user.email,
-        companyName: user.companyName,
-        tenantId: user.tenantId,
+        companyName: user.company_name,
+        tenantId: user.tenant_id,
       },
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-module.exports = router;
+export default router;
