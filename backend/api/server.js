@@ -1,14 +1,14 @@
+import serverless from "serverless-http";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import pool from "./db.js"; // our new PostgreSQL connection
-import authRoutes from "./routes/auth.js";
-import productsRoutes from "./routes/products.js";
+import pool from "../db.js"; // adjust path if needed
+import authRoutes from "../routes/auth.js";
+import productsRoutes from "../routes/products.js";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
@@ -25,10 +25,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productsRoutes);
 
 // Health check endpoint
-app.get("/health", (req, res) => {
+app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Export handler for Vercel serverless function
+export default app;
+export const handler = serverless(app);
