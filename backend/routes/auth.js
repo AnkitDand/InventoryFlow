@@ -3,7 +3,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-import { createUser, getUserByEmail } from "../models/user.js";
+import { createUser, getUserByEmail } from "../models/User.js";
 
 const router = express.Router();
 
