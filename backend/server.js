@@ -3,35 +3,31 @@ import { Pool } from "pg";
 import cors from "cors";
 import dotenv from "dotenv";
 
+// Load .env locally; Vercel uses dashboard env variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-console.log("Starting backend...");
 
 // Database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false, // Required for Supabase
-  },
+  ssl: process.env.NODE_ENV === "production" 
+    ? { rejectUnauthorized: false } // Required for many cloud Postgres
+    : false,
 });
 
-pool
-  .connect()
-  .then(() => console.log("Connected to Supabase/PostgreSQL"))
-  .catch((err) => console.error("DB connection error:", err));
+// Connect once at startup
+pool.connect()
+  .then(() => console.log("✅ Connected to PostgreSQL"))
+  .catch((err) => console.error("❌ DB connection error:", err));
 
-// Make pool available to routes
 app.locals.db = pool;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-console.log("Middleware configured: CORS and JSON parsing");
 
-// Log all incoming requests
+// Request logging
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
@@ -43,14 +39,11 @@ import productsRoutes from "./routes/products.js";
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productsRoutes);
-console.log("Routes configured: /api/auth, /api/products");
 
 // Health check
 app.get("/api/health", async (req, res) => {
-  console.log("Health check endpoint hit");
   try {
     const result = await pool.query("SELECT NOW()");
-    console.log("DB time fetched:", result.rows[0].now);
     res.json({
       status: "ok",
       database: "connected",
@@ -68,15 +61,16 @@ app.get("/api/health", async (req, res) => {
 
 // Root endpoint
 app.get("/", (req, res) => {
-  console.log("Root endpoint hit");
   res.json({ message: "InventoryFlow API is running!" });
 });
 
-// Start server (for local development)
+// Local development listener
 if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Server running locally on port ${PORT}`);
   });
 }
 
+// Export for Vercel
 export default app;
