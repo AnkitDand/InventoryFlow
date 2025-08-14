@@ -11,13 +11,15 @@ const app = express();
 // Database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production" 
-    ? { rejectUnauthorized: false } // Required for many cloud Postgres
-    : false,
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false } // Required for many cloud Postgres
+      : false,
 });
 
 // Connect once at startup
-pool.connect()
+pool
+  .connect()
   .then(() => console.log("✅ Connected to PostgreSQL"))
   .catch((err) => console.error("❌ DB connection error:", err));
 
@@ -65,12 +67,12 @@ app.get("/", (req, res) => {
 });
 
 // Local development listener
-if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running locally on port ${PORT}`);
-  });
-}
+// if (process.env.NODE_ENV !== "production") {
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running locally on port ${PORT}`);
+});
+// }
 
 // Export for Vercel
 export default app;
