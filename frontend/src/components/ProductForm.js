@@ -18,7 +18,7 @@ const ProductForm = ({ product, onClose }) => {
     try {
       if (product) {
         // Update existing product
-        await axios.put(`/products/${product._id}`, formData);
+        await axios.put(`/products/${product.id}`, formData);
       } else {
         // Create new product
         await axios.post("/products", formData);

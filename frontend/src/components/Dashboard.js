@@ -29,7 +29,7 @@ const Dashboard = () => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         await axios.delete(`/products/${id}`);
-        setProducts(products.filter((p) => p._id !== id));
+        setProducts(products.filter((p) => p.id !== id));
       } catch (error) {
         alert("Error deleting product");
       }
@@ -72,7 +72,7 @@ const Dashboard = () => {
           <p>No products yet. Add your first product!</p>
         ) : (
           products.map((product) => (
-            <div key={product._id} className="product-card">
+            <div key={product.id} className="product-card">
               {product.imageUrl && (
                 <img src={product.imageUrl} alt={product.name} />
               )}
@@ -84,7 +84,7 @@ const Dashboard = () => {
                 <strong>Quantity:</strong> {product.quantity}
               </p>
               <p>
-                <strong>Price:</strong> ${product.price}
+                <strong>Price:</strong> ₹{product.price}
               </p>
               <div className="product-actions">
                 <button
@@ -93,7 +93,7 @@ const Dashboard = () => {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(product._id)}
+                  onClick={() => handleDelete(product.id)}
                   className="btn-delete">
                   Delete
                 </button>
