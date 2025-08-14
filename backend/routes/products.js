@@ -9,7 +9,7 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
-} from "../models/product.js";
+} from "../models/Product.js";
 
 const router = express.Router();
 
